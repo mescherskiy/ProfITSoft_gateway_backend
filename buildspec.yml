@@ -8,7 +8,8 @@ phases:
       - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 730335342070.dkr.ecr.eu-north-1.amazonaws.com
       - REPOSITORY_URI=730335342070.dkr.ecr.eu-north-1.amazonaws.com/profitsoft-repository
       - echo setting image tag...
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - GATEWAY_IMAGE_TAG=build-gateway-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - BACKEND_IMAGE_TAG=build-backend-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
 
   build:
     commands:
@@ -20,21 +21,27 @@ phases:
       - cd service-backend
       - mvn clean install
       - cd ..
-      - echo building the Docker image...
-      - docker build -t $REPOSITORY_URI:latest .
+      - echo building the Docker images...
+      - docker build -t $REPOSITORY_URI:gateway-latest -f gateway/Dockerfile gateway
+      - docker build -t $REPOSITORY_URI:backend-latest -f service-backend/Dockerfile service-backend
       - echo tagging the Docker image...
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - docker tag $REPOSITORY_URI:gateway-latest $REPOSITORY_URI:$GATEWAY_IMAGE_TAG
+      - docker tag $REPOSITORY_URI:backend-latest $REPOSITORY_URI:$BACKEND_IMAGE_TAG
 
   post_build:
     commands:
-      - echo pushing Docker image to Amazon ECR started on `date`
-      - echo pushing to repository...
-      - docker push $REPOSITORY_URI:latest
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo setting container name...
-      - DOCKER_CONTAINER_NAME=cdicontainer
+      - echo pushing Docker images to Amazon ECR started on `date`
+      - echo pushing gateway image to repository...
+      - docker push $REPOSITORY_URI:gateway-latest
+      - docker push $REPOSITORY_URI:$GATEWAY_IMAGE_TAG
+      - echo pushing backend image to repository...
+      - docker push $REPOSITORY_URI:backend-latest
+      - docker push $REPOSITORY_URI:$BACKEND_IMAGE_TAG
+      - echo setting container names...
+      - GATEWAY_CONTAINER_NAME=gateway
+      - BACKEND_CONTAINER_NAME=backend
       - echo writing image definitions file...
-      - printf '[{"name":"%s","imageUri":"%s"}]' $DOCKER_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"},{"name":"%s","imageUri":"%s"}]' $GATEWAY_CONTAINER_NAME $REPOSITORY_URI:$GATEWAY_IMAGE_TAG $BACKEND_CONTAINER_NAME $REPOSITORY_URI:$BACKEND_IMAGE_TAG > imagedefinitions.json
       - echo printing imagedefinitions.json
       - cat imagedefinitions.json
 
