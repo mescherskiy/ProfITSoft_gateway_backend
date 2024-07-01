@@ -44,6 +44,8 @@ phases:
       - printf '[{"name":"%s","imageUri":"%s"},{"name":"%s","imageUri":"%s"}]' $GATEWAY_CONTAINER_NAME $REPOSITORY_URI:$GATEWAY_IMAGE_TAG $BACKEND_CONTAINER_NAME $REPOSITORY_URI:$BACKEND_IMAGE_TAG > imagedefinitions.json
       - echo printing imagedefinitions.json
       - cat imagedefinitions.json
+      - echo Starting docker-compose services...
+      - docker-compose -f docker-compose-infra.yml up -d
 
 artifacts:
   files:
