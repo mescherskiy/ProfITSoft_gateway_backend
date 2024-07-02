@@ -10,21 +10,21 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 
 @Configuration
 public class CorsConfig {
-    @Value("${frontend.uri}")
-    private String frontendUri;
+//    @Value("${frontend.uri}")
+//    private String frontendUri;
 
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("https://homework.d3quyrp7d48xeh.amplifyapp.com");
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.addAllowedOrigin("http://localhost:3050");
+        corsConfiguration.addAllowedOrigin("http://localhost:1000");
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");
-        corsConfiguration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
 
         return new CorsWebFilter(source);
     }
-
 }

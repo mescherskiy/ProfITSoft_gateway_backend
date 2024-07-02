@@ -60,10 +60,12 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     String redirectUri = buildRedirectUri(exchange.getRequest());
     return verifyState(state, exchange.getRequest())
         .then(googleAuthenticationService.processAuthenticationCallback(code, redirectUri)
-        .doOnNext(userInfo -> log.info("User authenticated: {}", userInfo))
+        .doOnNext(userInfo -> {
+          log.info("User authenticated: {}", userInfo);
+        })
         .flatMap(sessionService::saveSession)
         .flatMap(session -> sessionService.addSessionCookie(exchange, session))
-        .then(sendRedirect(exchange, "/api/profile")));
+        .then(sendRedirect(exchange, "/?auth=1")));
   }
 
   private Mono<Void> verifyState(String state, ServerHttpRequest request) {

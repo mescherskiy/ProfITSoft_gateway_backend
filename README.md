@@ -6,3 +6,5 @@ environment variables
 oauth.google.clientId=<client-id-value>
 oauth.google.clientSecret=<client-secret-value>
 ```
+
+It's enough to run Postgres and Consul Docker-images to run the project.

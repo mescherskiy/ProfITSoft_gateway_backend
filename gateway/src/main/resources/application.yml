@@ -17,7 +17,7 @@ spring:
     import: optional:consul:/
   cloud:
     consul:
-      host: consul
+      host: localhost
       port: 8500
       discovery:
         health-check-path: /health
@@ -28,14 +28,14 @@ spring:
           predicates:
             - Path=/oauth/**
         - id: service-backend-route
-          uri: lb://service-backend/api/**
+          uri: http://localhost:1001/api/**
           predicates:
             - Path=/api/**
           filters:
             - RewritePath=/api/movie/(?<remaining>.*), /api/movie/${remaining}
             - RewritePath=/api/director/(?<remaining>.*), /api/director/${remaining}
         - id: service-frontend-route
-          uri: https://homework.d3quyrp7d48xeh.amplifyapp.com/**
+          uri: http://localhost:3050/**
           predicates:
             - Path=/**
   r2dbc:
